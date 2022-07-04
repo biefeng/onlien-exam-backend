@@ -18,6 +18,9 @@ import lsgwr.exam.enums.QuestionEnum;
 import lsgwr.exam.service.ExamService;
 import lsgwr.exam.repository.*;
 import lsgwr.exam.vo.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -410,15 +413,15 @@ public class ExamServiceImpl implements ExamService {
             Integer key = entry.getKey();
             List<Question> value = entry.getValue();
             if (QuestionEnum.RADIO.getId() == key) {
-                List<Question> randomEles = RandomUtil.randomEles(value, radioCount);
+                Set<Question> randomEles = randomEles(value, radioCount);
                 questionList.addAll(randomEles);
                 exam.setExamQuestionIdsRadio(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
             } else if (QuestionEnum.CHECK.getId() == key) {
-                List<Question> randomEles = RandomUtil.randomEles(value, checkCount);
+                Set<Question> randomEles = randomEles(value, checkCount);
                 questionList.addAll(randomEles);
                 exam.setExamQuestionIdsCheck(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
             } else if (QuestionEnum.JUDGE.getId() == key) {
-                List<Question> randomEles = RandomUtil.randomEles(value, judgeCount);
+                Set<Question> randomEles = randomEles(value, judgeCount);
                 questionList.addAll(randomEles);
                 exam.setExamQuestionIdsJudge(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
             }
@@ -444,6 +447,22 @@ public class ExamServiceImpl implements ExamService {
 
         return examRepository.save(exam);
     }
+
+    <T> Set<T>  randomEles(List<T> arr,int count){
+        Set<T> set = new HashSet<>(count);
+        HashSet<T> ts = new HashSet<>(arr);
+        int limit = ts.size();
+
+        if (count>limit){
+            return ts;
+        }
+        ArrayList<T> list = new ArrayList<>(ts);
+        while (set.size()<count){
+            set.add(RandomUtil.randomEle(list,limit));
+        }
+        return set;
+    }
+
 
     @Override
     public Exam create(ExamCreateVo examCreateVo, String userId) {

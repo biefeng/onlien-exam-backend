@@ -10,6 +10,7 @@ package lsgwr.exam.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Date;
@@ -30,6 +31,7 @@ public class ExamRecord {
     /**
      * 考生作答地每个题目的选项(题目和题目之间用_分隔，题目有多个选项地话用-分隔),用于查看考试详情
      */
+    @Column(columnDefinition = "clob")
     private String answerOptionIds;
 
     /**

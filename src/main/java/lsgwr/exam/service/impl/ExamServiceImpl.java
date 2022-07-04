@@ -398,7 +398,13 @@ public class ExamServiceImpl implements ExamService {
     @Override
     public Exam randomCreate(ExamRandomCreateVo createVo, String userId) {
         String questionBankId = createVo.getQuestionBankId();
-        List<Question> questions = questionRepository.findByQuestionBankId(questionBankId);
+        List<Question> questions ;
+        if (StringUtils.isEmpty(questionBankId)){
+            questions = questionRepository.findAll();
+        }else{
+
+            questions = questionRepository.findByQuestionBankId(questionBankId);
+        }
 
         Integer radioCount = createVo.getRadioCount();
         Integer checkCount = createVo.getCheckCount();
@@ -413,15 +419,30 @@ public class ExamServiceImpl implements ExamService {
             Integer key = entry.getKey();
             List<Question> value = entry.getValue();
             if (QuestionEnum.RADIO.getId() == key) {
-                Set<Question> randomEles = randomEles(value, radioCount);
+                Set<Question> randomEles;
+                if (createVo.isRandom()){
+                    randomEles = randomEles(value, radioCount);
+                }else {
+                    randomEles = new HashSet<>(value);
+                }
                 questionList.addAll(randomEles);
                 exam.setExamQuestionIdsRadio(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
             } else if (QuestionEnum.CHECK.getId() == key) {
-                Set<Question> randomEles = randomEles(value, checkCount);
+                Set<Question> randomEles;
+                if (createVo.isRandom()){
+                    randomEles = randomEles(value, checkCount);
+                }else {
+                    randomEles = new HashSet<>(value);
+                }
                 questionList.addAll(randomEles);
                 exam.setExamQuestionIdsCheck(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
             } else if (QuestionEnum.JUDGE.getId() == key) {
-                Set<Question> randomEles = randomEles(value, judgeCount);
+                Set<Question> randomEles;
+                if (createVo.isRandom()){
+                    randomEles = randomEles(value, judgeCount);
+                }else {
+                    randomEles = new HashSet<>(value);
+                }
                 questionList.addAll(randomEles);
                 exam.setExamQuestionIdsJudge(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
             }

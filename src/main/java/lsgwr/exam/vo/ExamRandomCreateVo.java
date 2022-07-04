@@ -17,6 +17,7 @@ public class ExamRandomCreateVo {
     @JsonProperty("questionBankId")
     private String questionBankId;
 
+    private boolean random;
 
     /**
      * 单选题的分数

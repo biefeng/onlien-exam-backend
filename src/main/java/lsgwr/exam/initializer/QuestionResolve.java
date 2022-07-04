@@ -1,12 +1,14 @@
 package lsgwr.exam.initializer;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import lsgwr.exam.initializer.Question;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +22,9 @@ public class QuestionResolve {
     public static final Pattern explainPattern = Pattern.compile("^答案解析\\s*(:|：)\\s*(?<explain>.*)[\\t\\s\\r\\n]*$");
 
     public static List<Question> getQuestions() {
-        List<String> strings = FileUtil.readLines(new ClassPathResource("税务稽查案件办理程序规定专题.txt").getFile(), CharsetUtil.UTF_8);
+        ClassPathResource classPathResource = new ClassPathResource("classpath:税务稽查案件办理程序规定专题.txt");
+        List<String> strings = new ArrayList<>();
+        IoUtil.readLines(classPathResource.getReader(StandardCharsets.UTF_8),strings);
         Question question = null;
         String theme = null;
         String explain = "";

@@ -6,8 +6,11 @@ DELETE FROM ACTION;
 DELETE FROM  question_type;
 
 INSERT INTO "USER" (USER_ID,CREATE_TIME,UPDATE_TIME,USER_AVATAR,USER_DESCRIPTION,USER_EMAIL,USER_NICKNAME,USER_PASSWORD,USER_PHONE,USER_ROLE_ID,USER_USERNAME) VALUES
-	 ('6a4a7ba7d94f4b87a1cf7f744f903f18',NULL,NULL,'http://d.lanrentuku.com/down/png/1904/business_avatar/8_avatar_2754583.png','welcome to online exam system','335049213@qq.com','user_13297036046','YmllZmVuZzEyMw==','13297036046',1,'user_13297036046');
-
+	 ('6a4a7ba7d94f4b87a1cf7f744f903f18',NULL,NULL,'http://d.lanrentuku.com/down/png/1904/business_avatar/8_avatar_2754583.png','welcome to online exam system','yuan','yuan','MTIzNA==','123456',3,'yuan');
+INSERT INTO "USER" (USER_ID,CREATE_TIME,UPDATE_TIME,USER_AVATAR,USER_DESCRIPTION,USER_EMAIL,USER_NICKNAME,USER_PASSWORD,USER_PHONE,USER_ROLE_ID,USER_USERNAME) VALUES
+	 ('6a4a7ba7d94f4b87a1cf7f744f903f19',NULL,NULL,'http://d.lanrentuku.com/down/png/1904/business_avatar/8_avatar_2754583.png','welcome to online exam system','stu','stu','MTIzNA==','123456',3,'stu');
+INSERT INTO "USER" (USER_ID,CREATE_TIME,UPDATE_TIME,USER_AVATAR,USER_DESCRIPTION,USER_EMAIL,USER_NICKNAME,USER_PASSWORD,USER_PHONE,USER_ROLE_ID,USER_USERNAME) VALUES
+	 ('6a4a7ba7d94f4b87a1cf7f744f903f20',NULL,NULL,'http://d.lanrentuku.com/down/png/1904/business_avatar/8_avatar_2754583.png','welcome to online exam system','335049213@qq.com','user_13297036046','YmllZmVuZzEyMw==','13297036046',1,'user_13297036046');
 
 INSERT INTO `page`(PAGE_ID , PAGE_NAME ,PAGE_DESCRIPTION ,ACTION_IDS ) VALUES ('1', 'dashboard', '仪表盘', '1-2-3-4-5');
 INSERT INTO `page`(PAGE_ID , PAGE_NAME ,PAGE_DESCRIPTION ,ACTION_IDS )  VALUES ('2', 'exam-card', '考试列表', '1-6-3-4');

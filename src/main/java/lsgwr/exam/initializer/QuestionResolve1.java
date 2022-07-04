@@ -1,11 +1,13 @@
 package lsgwr.exam.initializer;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +23,9 @@ public class QuestionResolve1 {
     public static final Pattern explainPattern = Pattern.compile("^答案解析\\s*(:|：)\\s*(?<explain>.*)[\\t\\s\\r\\n]*$");
 
     public static List<Question> getQuestions() {
-        List<String> strings = FileUtil.readLines(new ClassPathResource("大企业税收管理.txt").getFile(), CharsetUtil.UTF_8);
+        ClassPathResource classPathResource = new ClassPathResource("classpath:大企业税收管理.txt");
+        List<String> strings = new ArrayList<>();
+        IoUtil.readLines(classPathResource.getReader(StandardCharsets.UTF_8),strings);
         Question question = null;
         String theme = null;
         String explain = "";
@@ -57,9 +61,9 @@ public class QuestionResolve1 {
                 lineType = LineType.ANSWER;
                 String answer = selectAnswerMatcher.group("answer");
                 if (questionType == QuestionType.CHECK) {
-                    if (answer.contains(",")){
+                    if (answer.contains(",")) {
                         ((Check) question).answer.addAll(Arrays.asList(answer.split(",")));
-                    }else{
+                    } else {
                         ((Check) question).answer.addAll(Arrays.asList(answer.split("|")));
                     }
                 } else if (questionType == QuestionType.RADIO) {

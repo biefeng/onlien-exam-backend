@@ -8,6 +8,7 @@ package lsgwr.exam.controller;
 
 import lsgwr.exam.entity.Exam;
 import lsgwr.exam.entity.ExamRecord;
+import lsgwr.exam.entity.QuestionBank;
 import lsgwr.exam.service.ExamService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -88,8 +89,6 @@ public class ExamController {
     @GetMapping("/question/detail/{id}")
     @ApiOperation("根据问题的id获取问题的详细信息")
     ResultVO<QuestionDetailVo> getQuestionDetail(@PathVariable String id) {
-        //  根据问题id获取问题的详细信息
-        System.out.println(id);
         ResultVO<QuestionDetailVo> resultVO;
         try {
             QuestionDetailVo questionDetailVo = examService.getQuestionDetail(id);
@@ -139,6 +138,38 @@ public class ExamController {
         String userId = (String) request.getAttribute("user_id");
         try {
             Exam exam = examService.create(examCreateVo, userId);
+            resultVO = new ResultVO<>(0, "创建考试成功", exam);
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultVO = new ResultVO<>(-1, "创建考试失败", null);
+        }
+        return resultVO;
+    }
+
+    @GetMapping("/questionBank/list")
+    ResultVO<List<QuestionBank>> questionBankList() {
+        // 获取问题的分类列表
+        ResultVO<List<QuestionBank>> resultVO;
+        try {
+            List<QuestionBank> list = examService.questionBankList();
+            resultVO = new ResultVO<>(0, "查詢題庫成功", list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultVO = new ResultVO<>(-1, "查詢題庫失敗", null);
+        }
+        return resultVO;
+    }
+
+    @PostMapping("/create/random")
+    @ApiOperation("创建考试")
+    ResultVO<Exam> randomCreateExam(
+            @RequestBody ExamRandomCreateVo createVo,
+            HttpServletRequest request) {
+        // 从前端传参数过来，在这里完成考试的入库
+        ResultVO<Exam> resultVO;
+        String userId = (String) request.getAttribute("user_id");
+        try {
+            Exam exam = examService.randomCreate(createVo, userId);
             resultVO = new ResultVO<>(0, "创建考试成功", exam);
         } catch (Exception e) {
             e.printStackTrace();

@@ -17,6 +17,7 @@ import javax.persistence.Id;
 public class QuestionOption {
     @Id
     private String questionOptionId;
+    private String questionOptionKey;
     private String questionOptionContent;
     private String questionOptionDescription;
 }

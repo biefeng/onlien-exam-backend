@@ -8,6 +8,7 @@ package lsgwr.exam.service;
 
 import lsgwr.exam.entity.Exam;
 import lsgwr.exam.entity.ExamRecord;
+import lsgwr.exam.entity.QuestionBank;
 import lsgwr.exam.vo.*;
 
 import java.util.HashMap;
@@ -119,4 +120,14 @@ public interface ExamService {
      * @return 更新后的考试详情
      */
     Exam update(ExamVo examVo, String userId);
+
+    /**
+     * 根据题库创建考试
+     * @param createVo
+     * @param userId
+     * @return
+     */
+    Exam randomCreate(ExamRandomCreateVo createVo, String userId);
+
+    List<QuestionBank> questionBankList();
 }

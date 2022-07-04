@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Date;
@@ -25,9 +26,13 @@ public class Exam {
     private String examName;
     private String examAvatar;
     private String examDescription;
+    @Column(columnDefinition = "clob")
     private String examQuestionIds;
+    @Column(columnDefinition = "clob")
     private String examQuestionIdsRadio;
+    @Column(columnDefinition = "clob")
     private String examQuestionIdsCheck;
+    @Column(columnDefinition = "clob")
     private String examQuestionIdsJudge;
     private Integer examScore;
     private Integer examScoreRadio;
@@ -35,6 +40,7 @@ public class Exam {
     private Integer examScoreJudge;
     private String examCreatorId;
     private Integer examTimeLimit;
+    private Integer flag;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date examStartDate;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

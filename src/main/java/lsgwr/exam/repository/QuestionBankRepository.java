@@ -7,16 +7,15 @@
 package lsgwr.exam.repository;
 
 import lsgwr.exam.entity.Question;
+import lsgwr.exam.entity.QuestionBank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface QuestionRepository extends JpaRepository<Question, String> {
-    List<Question> findByQuestionTypeId(Integer id);
+public interface QuestionBankRepository extends JpaRepository<QuestionBank, String> {
 
-    List<Question> findByQuestionBankId(String questionBankId);
 
-    @Query("select q from Question q order by q.updateTime desc")
-    List<Question> findAll();
+    @Query("select q from QuestionBank q order by q.updateTime desc")
+    List<QuestionBank> findAll();
 }

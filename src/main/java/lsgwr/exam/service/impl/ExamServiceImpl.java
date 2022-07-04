@@ -6,18 +6,25 @@
  ***********************************************************/
 package lsgwr.exam.service.impl;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import io.swagger.models.auth.In;
 import lsgwr.exam.entity.*;
 import lsgwr.exam.enums.QuestionEnum;
 import lsgwr.exam.service.ExamService;
 import lsgwr.exam.repository.*;
 import lsgwr.exam.vo.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -39,15 +46,18 @@ public class ExamServiceImpl implements ExamService {
 
     private final QuestionOptionRepository questionOptionRepository;
 
-    public ExamServiceImpl(QuestionRepository questionRepository, UserRepository userRepository, QuestionLevelRepository questionLevelRepository, QuestionTypeRepository questionTypeRepository, QuestionCategoryRepository questionCategoryRepository, QuestionOptionRepository questionOptionRepository, ExamRepository examRepository, ExamRecordRepository examRecordRepository) {
+    private final QuestionBankRepository questionBankRepository;
+
+    public ExamServiceImpl(ExamRepository examRepository, ExamRecordRepository examRecordRepository, QuestionRepository questionRepository, UserRepository userRepository, QuestionLevelRepository questionLevelRepository, QuestionTypeRepository questionTypeRepository, QuestionCategoryRepository questionCategoryRepository, QuestionOptionRepository questionOptionRepository, QuestionBankRepository questionBankRepository) {
+        this.examRepository = examRepository;
+        this.examRecordRepository = examRecordRepository;
         this.questionRepository = questionRepository;
         this.userRepository = userRepository;
         this.questionLevelRepository = questionLevelRepository;
         this.questionTypeRepository = questionTypeRepository;
         this.questionCategoryRepository = questionCategoryRepository;
         this.questionOptionRepository = questionOptionRepository;
-        this.examRepository = examRepository;
-        this.examRecordRepository = examRecordRepository;
+        this.questionBankRepository = questionBankRepository;
     }
 
     @Override
@@ -96,10 +106,12 @@ public class ExamServiceImpl implements ExamService {
                 ).getQuestionTypeDescription());
 
         // 设置题目分类，比如数学、语文、英语、生活、人文等
+        Integer questionCategoryId = question.getQuestionCategoryId();
+        System.out.println(questionCategoryId);
         questionVo.setQuestionCategory(
                 Objects.requireNonNull(
                         questionCategoryRepository.findById(
-                                question.getQuestionCategoryId()
+                                questionCategoryId
                         ).orElse(null)
                 ).getQuestionCategoryName()
         );
@@ -263,13 +275,17 @@ public class ExamServiceImpl implements ExamService {
         String[] optionIds = optionIdsStr.split("-");
         // 获取选项列表
         List<QuestionOption> optionList = questionOptionRepository.findAllById(Arrays.asList(optionIds));
+        optionList.sort((o1, o2) -> {
+            return o1.getQuestionOptionKey().compareTo(o2.getQuestionOptionKey());
+        });
         questionDetailVo.setOptions(optionList);
         return questionDetailVo;
     }
 
     @Override
     public List<ExamVo> getExamAll() {
-        List<Exam> examList = examRepository.findAll();
+
+        List<Exam> examList = examRepository.findByFlagNotIn(Arrays.asList(1));
         return getExamVos(examList);
     }
 
@@ -336,7 +352,6 @@ public class ExamServiceImpl implements ExamService {
     }
 
 
-
     @Override
     public ExamQuestionTypeVo getExamQuestionType() {
         ExamQuestionTypeVo examQuestionTypeVo = new ExamQuestionTypeVo();
@@ -373,6 +388,64 @@ public class ExamServiceImpl implements ExamService {
     }
 
     @Override
+    public List<QuestionBank> questionBankList() {
+        return questionBankRepository.findAll();
+    }
+
+    @Override
+    public Exam randomCreate(ExamRandomCreateVo createVo, String userId) {
+        String questionBankId = createVo.getQuestionBankId();
+        List<Question> questions = questionRepository.findByQuestionBankId(questionBankId);
+
+        Integer radioCount = createVo.getRadioCount();
+        Integer checkCount = createVo.getCheckCount();
+        Integer judgeCount = createVo.getJudgeCount();
+
+        Map<Integer, List<Question>> questionTypeMap = questions.stream().collect(Collectors.groupingBy(Question::getQuestionTypeId));
+
+        List<Question> questionList = new ArrayList<>();
+        Exam exam = new Exam();
+
+        for (Map.Entry<Integer, List<Question>> entry : questionTypeMap.entrySet()) {
+            Integer key = entry.getKey();
+            List<Question> value = entry.getValue();
+            if (QuestionEnum.RADIO.getId() == key) {
+                List<Question> randomEles = RandomUtil.randomEles(value, radioCount);
+                questionList.addAll(randomEles);
+                exam.setExamQuestionIdsRadio(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
+            } else if (QuestionEnum.CHECK.getId() == key) {
+                List<Question> randomEles = RandomUtil.randomEles(value, checkCount);
+                questionList.addAll(randomEles);
+                exam.setExamQuestionIdsCheck(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
+            } else if (QuestionEnum.JUDGE.getId() == key) {
+                List<Question> randomEles = RandomUtil.randomEles(value, judgeCount);
+                questionList.addAll(randomEles);
+                exam.setExamQuestionIdsJudge(String.join("-", randomEles.stream().map(Question::getQuestionId).collect(Collectors.toList())));
+            }
+        }
+
+        User user = userRepository.getOne(userId);
+        String format = DateUtil.format(new Date(), DatePattern.NORM_DATETIME_PATTERN);
+        exam.setExamName(format + "-" + user.getUserUsername());
+        exam.setExamDescription(String.format("Exam created by %s at %s", user.getUserUsername(), format));
+        exam.setExamId(IdUtil.simpleUUID());
+        BeanUtils.copyProperties(createVo, exam);
+        exam.setExamCreatorId(userId);
+        exam.setCreateTime(new Date());
+        exam.setExamAvatar("");
+        exam.setUpdateTime(new Date());
+        exam.setFlag(1);
+        // Todo:这两个日志后面是要在前端传入的，这里暂时定为当前日期
+        exam.setExamStartDate(new Date());
+        exam.setExamEndDate(new Date());
+
+        exam.setExamQuestionIds(String.join("-", questionList.stream().map(Question::getQuestionId).collect(Collectors.toList())));
+        exam.setExamScore(createVo.getTotalScore());
+
+        return examRepository.save(exam);
+    }
+
+    @Override
     public Exam create(ExamCreateVo examCreateVo, String userId) {
         // 在线考试系统创建
         Exam exam = new Exam();
@@ -384,6 +457,7 @@ public class ExamServiceImpl implements ExamService {
         // Todo:这两个日志后面是要在前端传入的，这里暂时定为当前日期
         exam.setExamStartDate(new Date());
         exam.setExamEndDate(new Date());
+        exam.setFlag(0);
         String radioIdsStr = "";
         String checkIdsStr = "";
         String judgeIdsStr = "";
@@ -475,7 +549,7 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public List<ExamCardVo> getExamCardList() {
-        List<Exam> examList = examRepository.findAll();
+        List<Exam> examList = examRepository.findByFlagNotIn(Arrays.asList(1));
         List<ExamCardVo> examCardVoList = new ArrayList<>();
         for (Exam exam : examList) {
             ExamCardVo examCardVo = new ExamCardVo();
@@ -649,6 +723,9 @@ public class ExamServiceImpl implements ExamService {
      * @return 替换掉最后一个-的字符串
      */
     private String replaceLastSeparator(String str) {
+        if (StrUtil.isEmpty(str)) {
+            return "";
+        }
         String lastChar = str.substring(str.length() - 1);
         // 题目和题目之间用$分隔，题目有多个选项地话用-分隔,题目和选项之间用_分隔
         if ("-".equals(lastChar) || "_".equals(lastChar) || "$".equals(lastChar)) {
